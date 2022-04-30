@@ -1,0 +1,76 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+
+<div class="row">
+    <div class="col-md-4">
+
+        <h2>上傳檔案</h2>
+        @using (Html.BeginForm("file", "home", FormMethod.Post,
+                                 new { enctype = "multipart/form-data" }))
+        {
+            <input type="file" name="file" id="file" />
+            <br>
+            <br>
+
+            <input type="submit" value="Upload file" />
+
+            <br>
+            <br>
+
+            @ViewBag.Message
+        }
+        <h2>下載檔案</h2>
+        <div id="downloadList"></div>
+    </div>
+</div>
+
+<script>
+
+    (function () {
+        var httpRequest;
+
+        function makeRequest() {
+            httpRequest = new XMLHttpRequest();
+
+            if (!httpRequest) {
+                alert('Giving up :( Cannot create an XMLHTTP instance');
+                return false;
+            }
+            httpRequest.onreadystatechange = alertContents;
+            httpRequest.open('GET', '/Home/getFileList');
+            httpRequest.send();
+        }
+
+        function alertContents() {
+            if (httpRequest.readyState === XMLHttpRequest.DONE) {
+                if (httpRequest.status === 200) {
+                    //alert(httpRequest.responseText);
+                    var jsonObj = JSON.parse(httpRequest.responseText)
+                    var fileList = JSON.parse(jsonObj.data)
+
+                    var listDom=document.getElementById("downloadList")
+
+                    for (i = 0; i < fileList.length; i++) {
+                        var aElement = document.createElement("a")
+                        aElement.textContent = fileList[i]
+                        aElement.href ="/Home/download/?fileID="+(i+1)
+                        listDom.appendChild(aElement)
+                        listDom.appendChild(document.createElement("br"))
+                    }
+
+                } else {
+                    alert('There was a problem with the request.');
+                }
+            }
+        }
+
+        makeRequest();
+        alertContents();
+
+
+
+    })();
+
+</script>
